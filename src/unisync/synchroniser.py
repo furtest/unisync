@@ -1,3 +1,6 @@
+# Copyright (C) 2025 Paul Retourné
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 import subprocess
 import os
 import sys

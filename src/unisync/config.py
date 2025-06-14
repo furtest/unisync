@@ -1,18 +1,22 @@
-from dataclasses import dataclass
-import ipaddress
-from typing import Union
+# Copyright (C) 2025 Paul Retourné
+# SPDX-License-Identifier: GPL-3.0-or-later
 
-import yaml
+from dataclasses import dataclass, field
+import ipaddress
+from typing import Union, Optional
+
+import pyrallis
 
 @dataclass
 class ServerConfig:
+    user: str
+    sshargs: Optional[list[str]] = field(default_factory=list)
     hostname: str = ""
     ip: str = ""
     port: int = 22
-    user: str
-    sshargs: list
 
     def __post_init__(self):
+        print(self.ip)
         if self.ip == "" and self.hostname == "":
             raise ValueError("A remote must be provided (ip or hostname)")
 
@@ -39,5 +43,4 @@ class Config:
         return config
 
 if __name__ == "__main__":
-    config = load_config("config.yaml")
-    print(config)
+    cfg = pyrallis.parse(config_class=Config, config_path="/home/furtest/files/programmation/unisync/config.yaml")
