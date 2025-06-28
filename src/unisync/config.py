@@ -3,20 +3,18 @@
 
 from dataclasses import dataclass, field
 import ipaddress
-from typing import Union, Optional
-
-import pyrallis
+import configparser
+from configparser import UNNAMED_SECTION
 
 @dataclass
 class ServerConfig:
     user: str
-    sshargs: Optional[list[str]] = field(default_factory=list)
+    sshargs: list[str] | None = field(default_factory=list)
     hostname: str = ""
     ip: str = ""
     port: int = 22
 
     def __post_init__(self):
-        print(self.ip)
         if self.ip == "" and self.hostname == "":
             raise ValueError("A remote must be provided (ip or hostname)")
 
@@ -36,11 +34,30 @@ class Config:
     server: ServerConfig
     roots: RootsConfig
 
-    def load_config(config_path:str):
-        with open(config_path, 'r') as file:
-            config = yaml.safe_load(file)
+def load_config(config_path:str) -> Config:
+    """
+    Load the config from the config file using configparser.
+    Args:
+        - config_path: The path to the configuration file.
+    Returns:
+        Config: A populated Config object containing the loaded config.
+    """
+    config = configparser.ConfigParser(allow_unnamed_section=True)
+    config.read(config_path)
 
-        return config
+    # Check if sections are provided
+    server_section = "Server" if "Server" in config.sections() else UNNAMED_SECTION
+    roots_section = "Roots" if "Roots" in config.sections() else UNNAMED_SECTION
 
-if __name__ == "__main__":
-    cfg = pyrallis.parse(config_class=Config, config_path="/home/furtest/files/programmation/unisync/config.yaml")
+    server_config = ServerConfig(
+            config.get(server_section, "user"),
+            config.get(server_section, "sshargs", fallback=None),
+            config.get(server_section, "hostname", fallback=None),
+            config.get(server_section, "ip", fallback=None),
+            config.getint(server_section, "port", fallback=None)
+        )
+    roots_config = RootsConfig(
+            config.get(roots_section, "local"),
+            config.get(roots_section, "remote")
+        )
+    return Config(server_config, roots_config)
