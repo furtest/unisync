@@ -136,20 +136,3 @@ class Synchroniser:
         ret_code = proc.wait()
         return ret_code
 
-if __name__ == "__main__":
-    sync = Synchroniser("/home/furtest/a", "/home/furtest/files/programmation/unisync/a", "furtest", "194.164.198.44", port=8443, args_bool=["auto"])
-    print("Creating master connection")
-    sync.create_ssh_master_connection()
-    print("Connected")
-
-    sync.sync_files(["salut", "a"])
-    sync.sync_links(["salut", "a"])
-
-    print("Closing master connection")
-    sync.close_ssh_master_connection()
-    print("Connection closed")
-
-# roots: remote_files, remote_links, local
-# arguments for unison
-# force
-    
