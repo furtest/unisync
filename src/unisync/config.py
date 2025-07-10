@@ -1,10 +1,10 @@
 # Copyright (C) 2025 Paul Retourné
 # SPDX-License-Identifier: GPL-3.0-or-later
 
+from configparser import UNNAMED_SECTION
 from dataclasses import dataclass, field
 import ipaddress
 import configparser
-from configparser import UNNAMED_SECTION
 
 @dataclass
 class ServerConfig:
@@ -30,9 +30,15 @@ class RootsConfig:
     remote: str
 
 @dataclass
+class UnisonConfig:
+    bools: list = field(default_factory=list)
+    values: dict = field(default_factory=dict)
+
+@dataclass
 class Config:
     server: ServerConfig
     roots: RootsConfig
+    unison: UnisonConfig
 
 def load_config(config_path:str) -> Config:
     """
@@ -42,7 +48,7 @@ def load_config(config_path:str) -> Config:
     Returns:
         Config: A populated Config object containing the loaded config.
     """
-    config = configparser.ConfigParser(allow_unnamed_section=True)
+    config = configparser.ConfigParser(allow_unnamed_section=True, allow_no_value=True)
     config.read(config_path)
 
     # Check if sections are provided
@@ -60,4 +66,17 @@ def load_config(config_path:str) -> Config:
             config.get(roots_section, "local"),
             config.get(roots_section, "remote")
         )
-    return Config(server_config, roots_config)
+
+    args_bool = list()
+    args_val = dict()
+    if "Unison" in config.sections():
+        for key, val in config.items("Unison"):
+            if key in config["DEFAULT"].keys():
+                continue
+            elif val == "" or val == None:
+                args_bool.append(key)
+            else:
+                args_val[key] = val
+    unison_config = UnisonConfig(args_bool, args_val)
+
+    return Config(server_config, roots_config, unison_config)
