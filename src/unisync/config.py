@@ -8,6 +8,9 @@ import configparser
 
 @dataclass
 class ServerConfig:
+    """
+    Dataclass keeping the config for connecting to the server
+    """
     user: str
     sshargs: list[str] | None = field(default_factory=list)
     hostname: str = ""
@@ -15,6 +18,9 @@ class ServerConfig:
     port: int = 22
 
     def __post_init__(self):
+        """
+        Make sure a remote is provided and the ip address is valid
+        """
         if self.ip == "" and self.hostname == "":
             raise ValueError("A remote must be provided (ip or hostname)")
 
@@ -26,16 +32,25 @@ class ServerConfig:
 
 @dataclass
 class RootsConfig:
+    """
+    Dataclass keeping the paths to the roots to synchronise
+    """
     local: str
     remote: str
 
 @dataclass
 class UnisonConfig:
+    """
+    Dataclass keeping unison specific configurations
+    """
     bools: list = field(default_factory=list)
     values: dict = field(default_factory=dict)
 
 @dataclass
 class Config:
+    """
+    Main dataclass for the configurations
+    """
     server: ServerConfig
     roots: RootsConfig
     unison: UnisonConfig
