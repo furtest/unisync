@@ -6,9 +6,13 @@ import subprocess
 def user_select_files(local_dir:str, choice_timeout:int=120) -> list[str]:
     """
     Make the user select files in the top directory.
-    Currently uses nnn for the selection,
-    the goal is to replace it in order to avoid using external programs.
-    Returns the list of paths selected.
+    Currently uses nnn for the selection.
+    The goal is to replace it in order to avoid using external programs.
+    Args:
+        local_dir: The absolute path to the top synchronisation directory
+        choice_timeout: Time given to make choices in nnn
+    Returns:
+        list[str]: The list of paths that was selected
     """
     command = [
             "/usr/bin/nnn",
