@@ -131,8 +131,40 @@ class Synchroniser:
             command.append(remote_root)
             command.append("-batch")
 
-        print(command)
         proc = subprocess.Popen(command)
         ret_code = proc.wait()
         return ret_code
+
+    def update_links(self, background:bool=True):
+        """
+        Update the links on the remote.
+        First calls cleanlinks to remove deadlinks and empty directories.
+        Then calls lndir to create the new links.
+        Args:
+        - 
+        """
+
+        link_update_script = (f"cd {self.remote_dir}/links && "
+        "cleanlinks && "
+        "lndir -withrevinfo -ignorelinks -silent ../.data .;")
+
+        if background:
+            link_background_wrapper = f"nohup bash -c \"{link_update_script}\" > /dev/null 2>&1 < /dev/null &"
+        else:
+            link_background_wrapper = link_update_script
+
+        command = [
+                "/usr/bin/ssh",
+                "-S", self.control_path,
+                f"{self.remote_user}@{self.remote_ip}",
+                "-p", str(self.remote_port),
+                link_background_wrapper
+                ]
+
+        link_update_process = subprocess.Popen(command, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+
+        if not background:
+            print("Starting links update.")
+            link_update_process.wait()
+            print("Done")
 
