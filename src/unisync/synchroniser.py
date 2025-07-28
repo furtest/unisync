@@ -7,6 +7,8 @@ import sys
 import time
 import logging
 
+from pathlib import Path
+
 logger = logging.getLogger(__name__)
 
 class Synchroniser:
@@ -141,7 +143,7 @@ class Synchroniser:
         First calls cleanlinks to remove deadlinks and empty directories.
         Then calls lndir to create the new links.
         Args:
-        - 
+        - background: controls if the update is done in the background or waited for
         """
 
         link_update_script = (f"cd {self.remote_dir}/links && "
@@ -168,3 +170,21 @@ class Synchroniser:
             link_update_process.wait()
             print("Done")
 
+    def mount_remote_dir(self):
+        """
+        Mount the remote directory to make the local links work.
+        This is achieved using sshfs.
+        Raise:
+        - subprocess.CalledProcessError: An error occured with sshfs
+        """
+        command = [
+                "/usr/bin/sshfs",
+                "-o", "ControlPath={self.control_path}",
+                "-o", "ServerAliveInterval=15",
+                "-p", str(self.remote_port),
+                f"{self.remote_user}@{self.remote_ip}:{self.remote_dir}/.data",
+                # Get the absolute path to the correct .data directory resolving symlinks
+                str(Path(f"{self.local}/../.data").resolve())
+                ]
+        completed_process = subprocess.run(command)
+        completed_process.check_returncode()
