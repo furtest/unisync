@@ -3,6 +3,7 @@
 
 from configparser import UNNAMED_SECTION
 from dataclasses import dataclass, field
+from pathlib import Path, PosixPath
 import ipaddress
 import configparser
 
@@ -47,6 +48,13 @@ class UnisonConfig:
     values: dict = field(default_factory=dict)
 
 @dataclass
+class OtherConfig:
+    """
+    Dataclass keeping miscellanous configuration options
+    """
+    cache_dir_path: PosixPath = Path("~/.unisync").expanduser()
+
+@dataclass
 class Config:
     """
     Main dataclass for the configurations
@@ -54,6 +62,8 @@ class Config:
     server: ServerConfig
     roots: RootsConfig
     unison: UnisonConfig
+    other: OtherConfig = field(default_factory=OtherConfig)
+
 
 def load_config(config_path:str) -> Config:
     """
